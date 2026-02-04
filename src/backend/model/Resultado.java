@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
  */
 public class Resultado {
 
-    private String nickname;
-    private double pontos;
-    private LocalDateTime dataHora;
+    private final String nickname;
+    private final double pontos;
+    private final LocalDateTime dataHora;
 
     public Resultado(String nickname, double pontos) {
         this.nickname = nickname;

@@ -9,3 +9,4 @@ public class QuizException extends Exception {
         super(msg);
     }
 }
+

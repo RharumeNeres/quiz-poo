@@ -18,8 +18,7 @@ public class ConfiguracaoManager {
 
     public static int carregarQP() throws IOException {
         File f = new File(FILE);
-        if (!f.exists()) return 10; // valor padrão
-
+        if (!f.exists()) return 10;
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             return Integer.parseInt(br.readLine());
         }

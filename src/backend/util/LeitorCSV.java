@@ -1,11 +1,10 @@
 package backend.util;
 
+import backend.exception.CsvInvalidoException;
 import backend.model.DBQuiz;
+
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Classe para leitura de um CSV com frases do quiz.
@@ -13,36 +12,47 @@ import java.util.Scanner;
  */
 public class LeitorCSV {
 
-    // Caminho do CSV na pasta data
     private static final String FILE_NAME = "data/efeito-estufa.csv";
 
-    public static List<DBQuiz> lerPerguntas() throws FileNotFoundException {
+    public static List<DBQuiz> lerPerguntas() throws CsvInvalidoException {
+
         List<DBQuiz> lista = new ArrayList<>();
+        Set<Integer> ids = new HashSet<>();
 
         File arquivo = new File(FILE_NAME);
-        if (!arquivo.exists()) {
-            throw new FileNotFoundException("Arquivo CSV não encontrado: " + FILE_NAME);
-        }
+        if (!arquivo.exists())
+            throw new CsvInvalidoException("Arquivo CSV não encontrado.");
 
         try (Scanner sc = new Scanner(arquivo)) {
-            while (sc.hasNext()) {
-                String line = sc.nextLine();
-                if (line.trim().isEmpty()) continue; // pula linha vazia
+            while (sc.hasNextLine()) {
 
-                String[] data = line.split(";");
-                if (data.length < 5) {
-                    throw new IllegalArgumentException("Linha do CSV inválida: " + line);
-                }
+                String linha = sc.nextLine().trim();
+                if (linha.isEmpty()) continue;
 
-                int id = Integer.parseInt(data[0]);
-                String question = data[1];
-                int category = Integer.parseInt(data[2]);
-                boolean answer = data[3].equalsIgnoreCase("V");
-                char level = data[4].charAt(0);
+                String[] d = linha.split(";");
+                if (d.length != 5)
+                    throw new CsvInvalidoException("Linha inválida: " + linha);
 
-                DBQuiz quiz = new DBQuiz(id, question, category, answer, level);
-                lista.add(quiz);
+                int id = Integer.parseInt(d[0]);
+                if (!ids.add(id))
+                    throw new CsvInvalidoException("ID duplicado: " + id);
+
+                String pergunta = d[1];
+                int categoria = Integer.parseInt(d[2]);
+
+                if (!d[3].equalsIgnoreCase("V") && !d[3].equalsIgnoreCase("F"))
+                    throw new CsvInvalidoException("Resposta inválida: " + d[3]);
+
+                boolean resposta = d[3].equalsIgnoreCase("V");
+
+                char nivel = d[4].charAt(0);
+                if (nivel != 'F' && nivel != 'M' && nivel != 'D')
+                    throw new CsvInvalidoException("Nível inválido: " + nivel);
+
+                lista.add(new DBQuiz(id, pergunta, categoria, resposta, nivel));
             }
+        } catch (Exception e) {
+            throw new CsvInvalidoException(e.getMessage());
         }
 
         return lista;
